@@ -1,0 +1,187 @@
+<div class="restaurant-detail-container">
+  <app-spinner [loading]="loading"></app-spinner>
+
+  <div *ngIf="!loading && place" class="restaurant-content">
+    <!-- Restaurant Header -->
+    <div
+      class="restaurant-header"
+      [style.backgroundImage]=""
+      style="background: black"
+    >
+      <!-- linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(' ') -->
+      <div class="header-content">
+        <h1>{{ place?.name }}</h1>
+
+        <div class="restaurant-meta">
+          <div class="rating-container">
+            <span class="rating-value">{{ place.rating?.toFixed(1) }}</span>
+            <app-star-rating [rating]="place.rating || 0"></app-star-rating>
+            <span class="review-count" *ngIf="place.reviews?.length"
+              >({{ place.reviews?.length }} reviews)</span
+            >
+          </div>
+
+          <div class="cuisine-types">
+            <span *ngFor="let place of place.types">{{ place }}</span>
+          </div>
+        </div>
+
+        <div class="restaurant-actions">
+          <button
+            *ngIf="isLoggedIn"
+            class="action-button primary"
+            (click)="toggleReviewForm()"
+          >
+            Write a Review
+          </button>
+          <a [href]="place.url" target="_blank" class="action-button secondary">
+            Get Directions
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant Tabs -->
+    <div class="restaurant-tabs">
+      <div
+        class="tab"
+        [class.active]="activeTab === 'overview'"
+        (click)="setActiveTab('overview')"
+      >
+        Overview
+      </div>
+      <div
+        class="tab"
+        [class.active]="activeTab === 'reviews'"
+        (click)="setActiveTab('reviews')"
+      >
+        Reviews
+      </div>
+      <div
+        class="tab"
+        [class.active]="activeTab === 'photos'"
+        (click)="setActiveTab('photos')"
+      >
+        Photos
+      </div>
+    </div>
+
+    <!-- Review Form (if toggled) -->
+    <div *ngIf="showReviewForm" class="review-form-container">
+      <app-review-form
+        (reviewSubmitted)="onReviewSubmitted($event)"
+        (cancelled)="showReviewForm = false"
+      ></app-review-form>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Overview Tab -->
+      <div *ngIf="activeTab === 'overview'" class="overview-tab">
+        <div class="info-section">
+          <h2>About</h2>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>Location</h3>
+            <p>{{ place.formatted_address }}</p>
+          </div>
+
+          <div class="info-card">
+            <h3>Contact</h3>
+            <p>
+              Phone:
+              {{
+                place.formatted_phone_number || place.international_phone_number
+              }}
+            </p>
+            <p *ngIf="place.website">
+              Website:
+              <a [href]="place.website" target="_blank">{{ place.website }}</a>
+            </p>
+          </div>
+
+          <div class="info-card">
+            <h3>Hours</h3>
+            <p style="margin-bottom: 20px">
+              Today:
+              {{
+                place?.opening_hours?.open_now && place.opening_hours.open_now
+                  ? "Open"
+                  : "Closed"
+              }}
+            </p>
+            <div class="hours-list">
+              <ng-container
+                *ngIf="place?.opening_hours?.weekday_text as weekdays"
+              >
+                <div *ngFor="let week of weekdays">
+                  {{ week }}
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h3>Additional Info</h3>
+            <ul class="additional-info">
+              <li *ngIf="place?.takeout">Takeout Available</li>
+              <li *ngIf="place?.dine_in">Dine-In Available</li>
+              <li *ngIf="place?.delivery">Delivery Available</li>
+              <li *ngIf="place?.serves_vegetarian_food">Vegetarian Food</li>
+              <li *ngIf="place?.serves_breakfast">Serves Breakfast</li>
+              <li *ngIf="place?.serves_brunch">Serves Brunch</li>
+              <li *ngIf="place?.serves_lunch">Serves Lunch</li>
+              <li *ngIf="place?.serves_dinner">Serves Dinner</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div *ngIf="activeTab === 'reviews'" class="reviews-tab">
+        <div class="reviews-header">
+          <h2>Customer Reviews</h2>
+          <button
+            *ngIf="isLoggedIn"
+            class="write-review-button"
+            (click)="toggleReviewForm()"
+          >
+            Write a Review
+          </button>
+        </div>
+
+        <div *ngIf="place?.reviews?.length === 0" class="no-results">
+          <p>No reviews yet. Be the first to review this restaurant!</p>
+        </div>
+
+        <app-review-list
+          *ngIf="place.reviews.length > 0"
+          [reviews]="place?.reviews || []"
+        ></app-review-list>
+      </div>
+
+      <!-- Photos Tab -->
+      <div *ngIf="activeTab === 'photos'" class="photos-tab">
+        <h2>Restaurant Photos</h2>
+
+        <div
+          *ngIf="!place.photos || place.photos.length === 0"
+          class="no-results"
+        >
+          <p>No photos available for this restaurant.</p>
+        </div>
+
+        <div
+          *ngIf="place.photos && place.photos.length > 0"
+          class="photos-grid"
+        >
+          <div *ngFor="let image of place.photos" class="photo-item">
+            <img [src]="getPhotoUrl(image)" [alt]="place.name" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

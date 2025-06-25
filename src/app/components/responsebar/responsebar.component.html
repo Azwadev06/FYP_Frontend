@@ -1,0 +1,7 @@
+<div *ngIf="!loading && totalResults > 0" class="response-bar">
+  <p>
+    About <span>{{ totalResults }}</span> results
+    {{responseTime > 0 && ` in
+      ${responseTime.toFixed(2)} ms`}}
+  </p>
+</div>

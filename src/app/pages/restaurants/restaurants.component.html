@@ -1,0 +1,20 @@
+<section class="section">
+  <app-spinner [loading]="loading"></app-spinner>
+
+  <app-responsebar
+    [loading]="loading"
+    [responseTime]="responseTime"
+    [totalResults]="totalResults"
+  ></app-responsebar>
+
+  <div class="restaurant-grid">
+    <app-restaurant-card
+      *ngFor="let place of places"
+      [place]="place"
+    ></app-restaurant-card>
+
+    <div *ngIf="places.length === 0 && !loading" class="no-results">
+      <p>No restaurants available at the moment.</p>
+    </div>
+  </div>
+</section>

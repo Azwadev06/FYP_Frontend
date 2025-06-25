@@ -1,0 +1,11 @@
+<div class="star-rating" [class]="size">
+  <span
+    *ngFor="let star of stars"
+    class="star"
+    [class]="getStarClass(star)"
+    (mouseenter)="hoverStar(star)"
+    (mouseleave)="resetHover()"
+    (click)="setRating(star)"
+    [style.cursor]="editable ? 'pointer' : 'default'"
+  ></span>
+</div>

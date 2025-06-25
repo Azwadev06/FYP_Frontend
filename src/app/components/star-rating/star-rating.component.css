@@ -1,0 +1,41 @@
+.star-rating {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .star {
+    display: inline-block;
+    position: relative;
+    color: #ddd;
+  }
+  
+  .star:before {
+    content: "★";
+  }
+  
+  .star.full {
+    color: #f39c12;
+  }
+  
+  .star.half:after {
+    content: "★";
+    color: #f39c12;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+  }
+  
+  .star-rating.small .star {
+    font-size: 0.8rem;
+  }
+  
+  .star-rating.medium .star {
+    font-size: 1.2rem;
+  }
+  
+  .star-rating.large .star {
+    font-size: 1.5rem;
+  }
+  

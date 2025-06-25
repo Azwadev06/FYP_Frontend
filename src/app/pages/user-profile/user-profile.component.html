@@ -1,0 +1,223 @@
+<div class="profile-container">
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="!loading && currentUser" class="profile-content">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <div class="avatar-placeholder">
+          {{ currentUser.firstName?.charAt(0) || ""
+          }}{{ currentUser.lastName?.charAt(0) || "" }}
+        </div>
+      </div>
+
+      <div class="profile-info">
+        <h1>
+          {{
+            currentUser.firstName?.charAt(0)?.toUpperCase() +
+              currentUser.firstName!.slice(1)
+          }}
+          {{
+            currentUser.lastName?.charAt(0)?.toUpperCase() +
+              currentUser.lastName!.slice(1)
+          }}
+        </h1>
+        <p class="username">{{ "@" + currentUser.username }}</p>
+      </div>
+    </div>
+
+    <div class="profile-tabs">
+      <div
+        class="tab"
+        [class.active]="activeTab === 'profile'"
+        (click)="setActiveTab('profile')"
+      >
+        Profile
+      </div>
+      <div
+        class="tab"
+        [class.active]="activeTab === 'preferences'"
+        (click)="setActiveTab('preferences')"
+      >
+        Preferences
+      </div>
+      <div
+        class="tab"
+        [class.active]="activeTab === 'reviews'"
+        (click)="setActiveTab('reviews')"
+      >
+        My Reviews
+      </div>
+      <div
+        class="tab"
+        [class.active]="activeTab === 'Liked'"
+        (click)="setActiveTab('Liked')"
+      >
+        My Likes
+      </div>
+    </div>
+
+    <div class="tab-content">
+      <!-- Profile Tab -->
+      <div *ngIf="activeTab === 'profile'" class="profile-tab">
+        <h2>Personal Information</h2>
+
+        <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" formControlName="firstName" />
+              <div
+                *ngIf="
+                  profileForm.get('firstName')?.invalid &&
+                  profileForm.get('firstName')?.touched
+                "
+                class="error-message"
+              >
+                First name is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" formControlName="lastName" />
+              <div
+                *ngIf="
+                  profileForm.get('lastName')?.invalid &&
+                  profileForm.get('lastName')?.touched
+                "
+                class="error-message"
+              >
+                Last name is required
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" formControlName="email" />
+            <div
+              *ngIf="
+                profileForm.get('email')?.invalid &&
+                profileForm.get('email')?.touched
+              "
+              class="error-message"
+            >
+              <span *ngIf="profileForm.get('email')?.errors?.['required']"
+                >Email is required</span
+              >
+              <span *ngIf="profileForm.get('email')?.errors?.['email']"
+                >Please enter a valid email</span
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" formControlName="username" />
+            <small>Username cannot be changed</small>
+          </div>
+
+          <div *ngIf="updateError" class="error-message">
+            {{ updateError }}
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              [disabled]="profileForm.invalid || saving"
+              class="submit-button"
+            >
+              <span *ngIf="saving" class="spinner small"></span>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Preferences Tab -->
+      <div *ngIf="activeTab === 'preferences'" class="preferences-tab">
+        <h2>Food Preferences</h2>
+        <p class="preferences-intro">
+          Customize your preferences to get better restaurant recommendations.
+        </p>
+
+        <form [formGroup]="preferencesForm" (ngSubmit)="updatePreferences()">
+          <div class="preferences-section">
+            <h3>Cuisine Preferences</h3>
+            <p>Select the cuisines you enjoy</p>
+
+            <div class="preferences-options">
+              <div
+                *ngFor="let cuisine of cuisineOptions"
+                class="preference-option"
+                [class.selected]="isCuisineSelected(cuisine)"
+                (click)="toggleCuisinePreference(cuisine)"
+              >
+                {{ cuisine }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="updateError" class="error-message">
+            {{ updateError }}
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" [disabled]="saving" class="submit-button">
+              <span *ngIf="saving" class="spinner small"></span>
+              Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div *ngIf="activeTab === 'reviews'" class="reviews-tab">
+        <h2>My Reviews</h2>
+
+        <div *ngIf="reviewsLoading" class="loading-spinner small">
+          <div class="spinner"></div>
+          <p>Loading your reviews...</p>
+        </div>
+
+        <div *ngIf="!reviewsLoading && reviews.length === 0" class="no-results">
+          <p>You haven't written any reviews yet.</p>
+          <a routerLink="/" class="action-button">Browse Restaurants</a>
+        </div>
+
+        <app-review-list
+          *ngIf="reviews.length > 0"
+          [reviews]="reviews || []"
+        ></app-review-list>
+      </div>
+
+      <!-- likes tab -->
+      <div *ngIf="activeTab === 'Liked'" class="like-tab">
+        <h2>My Liked</h2>
+
+        <!-- display liked places there  -->
+        <app-spinner [loading]="likedPlacesLoading"></app-spinner>
+
+        <div class="restaurant-grid">
+          <app-restaurant-card
+            *ngFor="let place of likedPlaces"
+            [place]="place"
+          ></app-restaurant-card>
+
+          <div *ngIf="likedPlaces.length === 0 && !likedPlacesLoading" class="no-results">
+            <p>{{ likedPlacesMessage }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !currentUser" class="not-found">
+    <h2>User Not Found</h2>
+    <p>Unable to load user profile. Please try logging in again.</p>
+    <a routerLink="/login" class="action-button">Login</a>
+  </div>
+</div>

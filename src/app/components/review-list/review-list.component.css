@@ -1,0 +1,154 @@
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.review-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: transform 0.3s;
+}
+
+.review-card:hover {
+  transform: translateY(-3px);
+}
+
+.review-card.own-review {
+  border-left: 4px solid #e74c3c;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center !important;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 500;
+  color: #333;
+}
+
+.review-date {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.review-rating {
+  display: flex;
+  align-items: center;
+}
+
+.rating-value {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  color: #e74c3c;
+}
+
+.restaurant-name {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.restaurant-name a {
+  color: #e74c3c;
+  text-decoration: none;
+}
+
+.restaurant-name a:hover {
+  text-decoration: underline;
+}
+
+.review-content {
+  margin-bottom: 1rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.review-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.review-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.helpful-button {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.helpful-button:hover {
+  background-color: #f8f8f8;
+  border-color: #ccc;
+}
+
+.helpful-icon {
+  font-size: 1.1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .review-rating {
+    margin-top: 0.5rem;
+  }
+}
+
+a {
+  text-decoration: none;
+}

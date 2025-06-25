@@ -1,0 +1,106 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Register</h2>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            [ngClass]="{ 'is-invalid': submitted && f['firstName'].errors }"
+          />
+          <div *ngIf="submitted && f['firstName'].errors" class="error-message">
+            <div *ngIf="f['firstName'].errors['required']">
+              First Name is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            [ngClass]="{ 'is-invalid': submitted && f['lastName'].errors }"
+          />
+          <div *ngIf="submitted && f['lastName'].errors" class="error-message">
+            <div *ngIf="f['lastName'].errors['required']">
+              Last Name is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
+          [ngClass]="{ 'is-invalid': submitted && f['username'].errors }"
+        />
+        <div *ngIf="submitted && f['username'].errors" class="error-message">
+          <div *ngIf="f['username'].errors['required']">
+            Username is required
+          </div>
+          <div *ngIf="f['username'].errors['invalidUsername']">
+            Username must be 4-20 characters, start with a letter, and contain only letters, numbers, or underscores.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+      <label for="email">Email</label>
+       <input
+       type="email"
+    formControlName="email"
+    class="form-control"
+    [ngClass]="{ 'is-invalid': submitted && f['email'].invalid }"
+  />
+  <div *ngIf="submitted && f['email'].invalid" class="invalid-feedback">
+    <div *ngIf="f['email'].errors?.['required']">Email is required.</div>
+    <div *ngIf="f['email'].errors?.['email']">Email must be valid.</div>
+    <div *ngIf="f['email'].errors && f['email'].errors['invalidEmail']">{{ f['email'].errors['invalidEmail'] }}</div>
+  </div>
+</div>
+      
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+        />
+        <div *ngIf="submitted && f['password'].errors" class="error-message">
+          <div *ngIf="f['password'].errors['required']">
+            Password is required
+          </div>
+          <div *ngIf="f['password'].errors['weakPassword']">
+            Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div class="form-group">
+        <button [disabled]="loading" class="submit-button">
+          <span *ngIf="loading" class="spinner"></span>
+          Register
+        </button>
+      </div>
+
+      <div class="auth-links">
+        <p>
+          Already have an account?
+          <a routerLink="/login" routerLinkActive="active">Login</a>
+        </p>
+      </div>
+    </form>
+  </div>

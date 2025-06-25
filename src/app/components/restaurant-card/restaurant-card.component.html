@@ -1,0 +1,57 @@
+<div class="restaurant-card">
+  <div class="restaurant-image">
+    <img
+      [ngSrc]="getPhotoUrl()"
+      [alt]="place.name"
+      width="400"
+      height="400"
+      loading="lazy"
+    />
+  </div>
+
+  <div class="restaurant-content">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h3 class="restaurant-name">{{ place.name.slice(0, 30) + "..." }}</h3>
+      <!-- Heart Like Button -->
+      <button 
+        (click)="toggleLike($event,place.place_id)" 
+        class="like-btn" 
+        [attr.aria-pressed]="isLiked"
+        style="background: none; border: none; cursor: pointer; outline: none; padding: 0;">
+        <span 
+          [ngClass]="{'liked': isLiked}" 
+          style="font-size: 1.5rem; color: #e25555;">
+          {{ isLiked ? '❤️' : '🤍' }}
+        </span>
+      </button>
+    </div>
+
+    <div class="restaurant-info">
+      <div class="rating">
+        <span class="rating-value">{{ place.rating?.toFixed(1) }}</span>
+        <app-star-rating [rating]="place.rating || 0"></app-star-rating>
+      </div>
+    </div>
+    <div>
+      <p class="opening-status">
+        {{
+          place?.opening_hours?.open_now && place.opening_hours.open_now
+            ? "Today Open"
+            : "Today Closed"
+        }}
+      </p>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: end">
+      <div class="">
+        <p class="cuisine">
+          {{ place.cuisine && place.cuisine }}
+        </p>
+      </div>
+      <div>
+        <a [routerLink]="['/restaurants', place.place_id]" class="view-details"
+          >View Details</a
+        >
+      </div>
+    </div>
+  </div>
+</div>

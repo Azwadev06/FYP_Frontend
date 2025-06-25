@@ -1,0 +1,110 @@
+<header class="header">
+  <div class="container">
+    <div class="logo">
+      <a routerLink="/">
+        <h1>FoodReview</h1>
+      </a>
+    </div>
+
+    <nav class="desktop-nav">
+      <ul>
+        <li><a routerLink="Home" [routerLinkActive]="'active'">Home</a></li>
+        <!-- <li>
+          <a routerLink="/restaurants" routerLinkActive="active">Restaurants</a>
+        </li> -->
+        <ng-container *ngIf="currentUser">
+          <li>
+            <a routerLink="/recommendations" routerLinkActive="active"
+              >Recommendations</a
+            >
+          </li>
+          <li>
+            <a routerLink="/profile" routerLinkActive="active">Profile</a>
+          </li>
+
+          <li><a (click)="logout()" class="logout-btn">Logout</a></li>
+        </ng-container>
+        <ng-container *ngIf="!currentUser">
+          <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
+          <li>
+            <a
+              routerLink="/register"
+              routerLinkActive="active"
+              class="register-btn"
+              >Register</a
+            >
+          </li>
+        </ng-container>
+      </ul>
+    </nav>
+
+    <div class="mobile-menu-toggle" (click)="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <nav class="mobile-nav" [class.open]="isMenuOpen">
+      <ul>
+        <li>
+          <a
+            routerLink="/"
+            routerLinkActive="active"
+            (click)="isMenuOpen = false"
+            >Home</a
+          >
+        </li>
+        <!-- <li>
+          <a
+            routerLink="/restaurants"
+            routerLinkActive="active"
+            (click)="isMenuOpen = false"
+            >Restaurants</a
+          >
+        </li> -->
+        <ng-container *ngIf="currentUser">
+          <li>
+            <a
+              routerLink="/recommendations"
+              routerLinkActive="active"
+              (click)="isMenuOpen = false"
+              >Recommendations</a
+            >
+          </li>
+          <li>
+            <a
+              routerLink="/profile"
+              routerLinkActive="active"
+              (click)="isMenuOpen = false"
+              >Profile</a
+            >
+          </li>
+          <li>
+            <a (click)="logout(); isMenuOpen = false" class="logout-btn"
+              >Logout</a
+            >
+          </li>
+        </ng-container>
+        <ng-container *ngIf="!currentUser">
+          <li>
+            <a
+              routerLink="/login"
+              routerLinkActive="active"
+              (click)="isMenuOpen = false"
+              >Login</a
+            >
+          </li>
+          <li>
+            <a
+              routerLink="/register"
+              routerLinkActive="active"
+              (click)="isMenuOpen = false"
+              class="register-btn"
+              >Register</a
+            >
+          </li>
+        </ng-container>
+      </ul>
+    </nav>
+  </div>
+</header>
