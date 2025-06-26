@@ -1,0 +1,95 @@
+<!-- Updated Admin Login Component with Validation -->
+<div class="admin-login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="brand-title">FoodReview</h1>
+      <h2 class="admin-title">Admin Portal</h2>
+      <p class="admin-subtitle">Secure access for administrators</p>
+    </div>
+    
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onLogin()" novalidate>
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username">Username *</label>
+        <input 
+          type="text" 
+          id="username" 
+          formControlName="username"
+          placeholder="Enter admin username"
+          [class.error]="username?.invalid && username?.touched"
+          (focus)="onFieldFocus()"
+          (keypress)="onKeyPress($event)"
+          autocomplete="username">
+        
+        <!-- Username Validation Errors -->
+        <div class="field-error" *ngIf="username?.invalid && username?.touched">
+          {{ getUsernameErrorMessage() }}
+        </div>
+      </div>
+      
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password *</label>
+        <div class="password-input-container">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            formControlName="password"
+            placeholder="Enter admin password"
+            [class.error]="password?.invalid && password?.touched"
+            (focus)="onFieldFocus()"
+            (keypress)="onKeyPress($event)"
+            autocomplete="current-password">
+          
+          <button 
+            type="button" 
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        
+        <!-- Password Validation Errors -->
+        <div class="field-error" *ngIf="password?.invalid && password?.touched">
+          {{ getPasswordErrorMessage() }}
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="form-group">
+        <button 
+          type="submit" 
+          class="login-btn"
+          [disabled]="isLoading"
+          [class.loading]="isLoading">
+          <span class="btn-text" *ngIf="!isLoading">Sign In to Admin Panel</span>
+          <span class="btn-text" *ngIf="isLoading">
+            <span class="spinner"></span>
+            Signing In...
+          </span>
+        </button>
+      </div>
+      
+      <!-- Clear Form Button -->
+      <div class="form-group" *ngIf="loginForm.dirty">
+        <button type="button" class="clear-btn" (click)="clearForm()">
+          Clear Form
+        </button>
+      </div>
+      
+      <!-- General Error Message -->
+      <div class="error-message" *ngIf="errorMessage">
+        <span class="error-icon">⚠️</span>
+        {{ errorMessage }}
+      </div>
+    </form>
+    
+    <div class="login-footer">
+      <p>Authorized personnel only</p>
+      <p class="security-note">
+        <small>🔒 This is a secure admin area. All login attempts are monitored.</small>
+      </p>
+    </div>
+  </div>
+</div>

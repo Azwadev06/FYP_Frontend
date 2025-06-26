@@ -1,0 +1,396 @@
+<!-- Updated Admin Dashboard Component -->
+<div class="admin-dashboard">
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="brand-title">FoodReview</h1>
+        <span class="admin-badge">Admin Panel</span>
+      </div>
+      <div class="header-right">
+        <span class="admin-welcome">Welcome, {{ adminName }}</span>
+        <button class="settings-btn" (click)="openSettingsModal()" title="Settings">
+          ⚙️
+        </button>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="admin-content">
+    <!-- Main Panel -->
+    <main class="admin-main">
+      <!-- Success/Error Messages -->
+      <div class="message-container">
+        <div class="success-message" *ngIf="successMessage">
+          <span class="message-icon">✅</span>
+          {{ successMessage }}
+        </div>
+        <div class="error-message" *ngIf="errorMessage">
+          <span class="message-icon">❌</span>
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <h3 class="stat-number">{{ totalUsers }}</h3>
+            <p class="stat-label">Total Users</p>
+          </div>
+        </div>
+      
+        
+        <div class="stat-card">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-info">
+            <button class="refresh-btn" (click)="refreshData()" [disabled]="isLoading">
+              {{ isLoading ? 'Loading...' : 'Refresh Data' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Management Section -->
+      <div class="management-section">
+        <div class="section-header">
+          <h2 class="section-title">User Management</h2>
+          <div class="header-actions">
+            <button class="export-btn" (click)="exportUsers()" title="Export Users">
+              📊 Export
+            </button>
+            <button class="add-user-btn" (click)="openAddUserModal()">
+              <span class="btn-icon">+</span>
+              Add New User
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="search-filter-bar">
+          <div class="search-box">
+            <input 
+              type="text" 
+              placeholder="Search users by name, email, or username..." 
+              [(ngModel)]="searchTerm"
+              (input)="filterUsers()"
+              class="search-input">
+            <span class="search-icon">🔍</span>
+          </div>
+          
+        </div>
+
+        <!-- Users Table -->
+        <!-- Loading Template -->
+        <ng-template #loadingTemplate>
+          <div class="loading-container">
+            <div class="spinner-large"></div>
+            <p>Loading users...</p>
+          </div>
+        </ng-template>
+
+        <ng-container *ngIf="!isLoading; else loadingTemplate">
+          <div class="users-table-container">
+            <table class="users-table" *ngIf="filteredUsers.length > 0; else noUsersTemplate">
+              <thead>
+                <tr>
+                  <th>Avatar</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Username</th>
+                  <th>Join Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="user-row">
+                  <td>
+                    <div class="user-avatar" [style.background-color]="getAvatarColor(user.id)">
+                      {{ getInitials(user.firstName, user.lastName) }}
+                    </div>
+                  </td>
+                  <td class="user-name">{{ user.firstName }} {{ user.lastName }}</td>
+                  <td class="user-email">{{ user.email }}</td>
+                  <td class="user-username">{{ '@' + user.username }}</td>
+                  
+                  <td class="join-date">{{ user.joinDate | date:'MMM dd, yyyy' }}</td>
+                  <td class="actions">
+                    <button 
+                      class="action-btn edit-btn" 
+                      (click)="editUser(user)"
+                      title="Edit User"
+                      [disabled]="isLoading">
+                      ✏️
+                    </button>
+                    <button 
+                      class="action-btn delete-btn" 
+                      (click)="deleteUser(user.id, user.firstName + ' ' + user.lastName)"
+                      title="Delete User"
+                      [disabled]="isLoading">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- No Users Template -->
+            <ng-template #noUsersTemplate>
+              <div class="no-users">
+                <div class="no-users-icon">👥</div>
+                <h3>No Users Found</h3>
+                <button class="add-user-btn" (click)="openAddUserModal()" *ngIf="!searchTerm ">
+                  Add First User
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit User Modal -->
+  <div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Edit User' : 'Add New User' }}</h3>
+        <button class="close-btn" (click)="closeUserModal()">×</button>
+      </div>
+      
+      <form class="user-form" (ngSubmit)="saveUser()" #userForm="ngForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input 
+              type="text" 
+              id="firstName"
+              name="firstName"
+              [(ngModel)]="currentUser.firstName" 
+              #firstName="ngModel"
+              required
+              minlength="2"
+              maxlength="50"
+              pattern="[a-zA-Z\s]+"
+              [class.error]="firstName.invalid && firstName.touched"
+              placeholder="Enter first name">
+            <div class="field-error" *ngIf="firstName.invalid && firstName.touched">
+              <span *ngIf="firstName.errors?.['required']">First name is required</span>
+              <span *ngIf="firstName.errors?.['minlength']">First name must be at least 2 characters</span>
+              <span *ngIf="firstName.errors?.['maxlength']">First name cannot exceed 50 characters</span>
+              <span *ngIf="firstName.errors?.['pattern']">First name can only contain letters and spaces</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <input 
+              type="text" 
+              id="lastName"
+              name="lastName"
+              [(ngModel)]="currentUser.lastName" 
+              #lastName="ngModel"
+              required
+              minlength="2"
+              maxlength="50"
+              pattern="[a-zA-Z\s]+"
+              [class.error]="lastName.invalid && lastName.touched"
+              placeholder="Enter last name">
+            <div class="field-error" *ngIf="lastName.invalid && lastName.touched">
+              <span *ngIf="lastName.errors?.['required']">Last name is required</span>
+              <span *ngIf="lastName.errors?.['minlength']">Last name must be at least 2 characters</span>
+              <span *ngIf="lastName.errors?.['maxlength']">Last name cannot exceed 50 characters</span>
+              <span *ngIf="lastName.errors?.['pattern']">Last name can only contain letters and spaces</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input 
+            type="email" 
+            id="email"
+            name="email"
+            [(ngModel)]="currentUser.email" 
+            #email="ngModel"
+            required
+            email
+            maxlength="100"
+            [class.error]="email.invalid && email.touched || emailExists"
+            placeholder="Enter email address"
+            (blur)="checkEmailExists()">
+          <div class="field-error" *ngIf="(email.invalid && email.touched) || emailExists">
+            <span *ngIf="email.errors?.['required']">Email is required</span>
+            <span *ngIf="email.errors?.['email']">Please enter a valid email address</span>
+            <span *ngIf="email.errors?.['maxlength']">Email cannot exceed 100 characters</span>
+            <span *ngIf="emailExists">This email is already registered</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="username">Username *</label>
+          <input 
+            type="text" 
+            id="username"
+            name="username"
+            [(ngModel)]="currentUser.username" 
+            #username="ngModel"
+            required
+            minlength="5"
+            maxlength="20"
+            pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d_]+$"
+            [class.error]="username.invalid && username.touched || usernameExists"
+            placeholder="Enter username"
+            (blur)="checkUsernameExists()"
+            [disabled]="isEditMode">
+          <div class="field-error" *ngIf="(username.invalid && username.touched) || usernameExists">
+            <span *ngIf="username.errors?.['required']">Username is required</span>
+            <span *ngIf="username.errors?.['minlength']">Username must be at least 5 characters</span>
+            <span *ngIf="username.errors?.['maxlength']">Username cannot exceed 20 characters</span>
+            <span *ngIf="username.errors?.['pattern']">Username can only contain letters, numbers, and underscores</span>
+            <span *ngIf="usernameExists">This username is already taken</span>
+          </div>
+        </div>
+
+
+      <div class="form-group">
+  <label for="password">Password *</label>
+  <input
+    type="password"
+    id="password"
+    name="password"
+    [(ngModel)]="currentUser.password"
+    #password="ngModel"
+    [required]="!isEditMode"
+    minlength="8"
+    maxlength="50"
+    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$"
+    [class.error]="password.invalid && password.touched"
+    placeholder="Enter password">
+
+  <div class="field-error" *ngIf="password.invalid && password.touched && !isEditMode">
+    <span *ngIf="password.errors?.['required']">Password is required</span>
+    <span *ngIf="password.errors?.['minlength']">Password must be at least 8 characters</span>
+    <span *ngIf="password.errors?.['maxlength']">Password cannot exceed 50 characters</span>
+    <span *ngIf="password.errors?.['pattern']">
+      Password must include uppercase, lowercase, number, and special character
+    </span>
+  </div>
+</div>
+        
+    
+        
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeUserModal()">Cancel</button>
+          <button 
+            type="submit" 
+            class="save-btn" 
+            [disabled]="userForm.invalid || isLoading || emailExists || usernameExists">
+            <span *ngIf="!isLoading">{{ isEditMode ? 'Update User' : 'Create User' }}</span>
+            <span *ngIf="isLoading">
+              <span class="spinner"></span>
+              {{ isEditMode ? 'Updating...' : 'Creating...' }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" *ngIf="showSettingsModal" (click)="closeSettingsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Admin Settings</h3>
+        <button class="close-btn" (click)="closeSettingsModal()">×</button>
+      </div>
+      
+      <form class="settings-form" (ngSubmit)="saveSettings()" #settingsForm="ngForm">
+        <div class="form-group">
+          <label for="adminName">Admin Name *</label>
+          <input 
+            type="text" 
+            id="adminName"
+            name="adminName"
+            [(ngModel)]="adminSettings.name" 
+            #adminNameField="ngModel"
+            required
+            minlength="2"
+            maxlength="50"
+            [class.error]="adminNameField.invalid && adminNameField.touched"
+            placeholder="Enter admin name">
+          <div class="field-error" *ngIf="adminNameField.invalid && adminNameField.touched">
+            <span *ngIf="adminNameField.errors?.['required']">Admin name is required</span>
+            <span *ngIf="adminNameField.errors?.['minlength']">Name must be at least 2 characters</span>
+            <span *ngIf="adminNameField.errors?.['maxlength']">Name cannot exceed 50 characters</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="currentPassword">Current Password *</label>
+          <input 
+            type="password" 
+            id="currentPassword"
+            name="currentPassword"
+            [(ngModel)]="adminSettings.currentPassword" 
+            #currentPassword="ngModel"
+            required
+            placeholder="Enter current password">
+          <div class="field-error" *ngIf="currentPassword.invalid && currentPassword.touched">
+            <span *ngIf="currentPassword.errors?.['required']">Current password is required</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="newPassword">New Password (leave blank to keep current)</label>
+          <input 
+            type="password" 
+            id="newPassword"
+            name="newPassword"
+            [(ngModel)]="adminSettings.newPassword" 
+            #newPassword="ngModel"
+            minlength="6"
+            maxlength="50"
+            [class.error]="newPassword.invalid && newPassword.touched"
+            placeholder="Enter new password">
+          <div class="field-error" *ngIf="newPassword.invalid && newPassword.touched">
+            <span *ngIf="newPassword.errors?.['minlength']">Password must be at least 6 characters</span>
+            <span *ngIf="newPassword.errors?.['maxlength']">Password cannot exceed 50 characters</span>
+          </div>
+        </div>
+        
+        <div class="form-group" *ngIf="adminSettings.newPassword">
+          <label for="confirmPassword">Confirm New Password *</label>
+          <input 
+            type="password" 
+            id="confirmPassword"
+            name="confirmPassword"
+            [(ngModel)]="adminSettings.confirmPassword" 
+            #confirmPassword="ngModel"
+            [class.error]="confirmPassword.touched && adminSettings.newPassword !== adminSettings.confirmPassword"
+            placeholder="Confirm new password">
+          <div class="field-error" *ngIf="confirmPassword.touched && adminSettings.newPassword !== adminSettings.confirmPassword">
+            <span>Passwords do not match</span>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeSettingsModal()">Cancel</button>
+          <button 
+            type="submit" 
+            class="save-btn" 
+            [disabled]="settingsForm.invalid || isLoading || (adminSettings.newPassword && adminSettings.newPassword !== adminSettings.confirmPassword)">
+            <span *ngIf="!isLoading">Save Settings</span>
+            <span *ngIf="isLoading">
+              <span class="spinner"></span>
+              Saving...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

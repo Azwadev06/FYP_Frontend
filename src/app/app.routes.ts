@@ -7,6 +7,9 @@ import { UserProfileComponent } from './pages/user-profile/user-profile.componen
 import { RestaurantDetailComponent } from './pages/restaurant-detail/restaurant-detail.component';
 import { RecommendationsComponent } from './pages/recommendations/recommendations.component';
 import { RestaurantsComponent } from './pages/restaurants/restaurants.component';
+import { AdminDashboardComponent } from './auth/admin-dashboard/admin-dashboard.component';
+import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
+import { AdminGuard } from './admin.guard';
 
 export const routes: Routes = [
   { path: "", component: HomeComponent },
@@ -16,6 +19,26 @@ export const routes: Routes = [
   { path: "restaurants/:placeId", component: RestaurantDetailComponent },
   { path: "profile", component: UserProfileComponent, canActivate: [AuthGuard] },
   { path: "recommendations", component: RecommendationsComponent, canActivate: [AuthGuard] },
+
+   {
+    path: 'admin',
+    children: [
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      },
+      {
+        path: 'login',
+        component: AdminLoginComponent
+      },
+      {
+        path: 'dashboard',
+        component: AdminDashboardComponent,
+        //canActivate: [AdminGuard]
+      }
+    ]
+  },
 
   { path: "**", redirectTo: "" },
 ]
