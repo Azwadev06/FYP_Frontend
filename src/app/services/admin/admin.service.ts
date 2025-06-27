@@ -1,9 +1,10 @@
 // Admin Service for API calls
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap } from "rxjs/operators"
 import { Admin, AdminLoginData } from '../../types/types';
+
 
 export interface User {
   id: number;
@@ -50,9 +51,10 @@ export class AdminService {
 
   }
 
-  logout(): void {
+  logout() {
     localStorage.removeItem('adminToken');
     this.isAuthenticatedSubject.next(false);
+    return of(true);
   }
 
   isAuthenticated(): Observable<boolean> {

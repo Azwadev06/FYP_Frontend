@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AdminService } from '../../services/admin/admin.service';
 
 export interface User {
   id: number;
@@ -27,11 +28,11 @@ export interface AdminSettings {
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css'],
-  imports:[FormsModule,RouterModule,NgFor,NgIf, CommonModule]
+  imports: [FormsModule, RouterModule, NgFor, NgIf, CommonModule]
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-    @ViewChild('noUsersTemplate', { static: true }) noUsersTemplate!: TemplateRef<any>;
+  @ViewChild('noUsersTemplate', { static: true }) noUsersTemplate!: TemplateRef<any>;
 
   // Dashboard data
   users: User[] = [
@@ -60,21 +61,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       joinDate: new Date('2024-03-10')
     }
   ];
-  
+
   filteredUsers: User[] = [];
   totalUsers = 0;
   totalReviews = 156;
   totalRestaurants = 89;
-  
+
   // Search and filter
   searchTerm = '';
-  
+
   // Modal states
   showUserModal = false;
   showSettingsModal = false;
   isEditMode = false;
   currentUser: Partial<User> = {};
-  
+
   // Admin settings
   adminName = 'Admin';
   adminSettings: AdminSettings = {
@@ -83,22 +84,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     newPassword: '',
     confirmPassword: ''
   };
-  
+
   // Loading states
   isLoading = false;
-  
+
   // Validation flags
   emailExists = false;
   usernameExists = false;
-  
+
   // Messages
   errorMessage = '';
   successMessage = '';
-  
+
   // Next ID for new users
   private nextId = 4;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private adminService: AdminService) { }
 
   ngOnInit(): void {
     this.filteredUsers = [...this.users];
@@ -134,7 +135,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     // Apply search filter
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.firstName.toLowerCase().includes(searchLower) ||
         user.lastName.toLowerCase().includes(searchLower) ||
         user.email.toLowerCase().includes(searchLower) ||
@@ -142,7 +143,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       );
     }
 
-      this.filteredUsers = filtered; 
+    this.filteredUsers = filtered;
 
   }
 
@@ -184,7 +185,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const existingUser = this.users.find(u => 
+    const existingUser = this.users.find(u =>
       u.email.toLowerCase() === this.currentUser.email?.toLowerCase() &&
       u.id !== this.currentUser.id
     );
@@ -199,7 +200,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const existingUser = this.users.find(u => 
+    const existingUser = this.users.find(u =>
       u.username.toLowerCase() === this.currentUser.username?.toLowerCase() &&
       u.id !== this.currentUser.id
     );
@@ -243,7 +244,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             username: this.currentUser.username!.trim().toLowerCase(),
             joinDate: new Date()
           };
-          
+
           this.users.unshift(newUser);
           this.totalUsers = this.users.length;
           this.showSuccessMessage('User created successfully');
@@ -262,7 +263,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // Delete user
   deleteUser(userId: number, userName: string): void {
     const confirmMessage = `Are you sure you want to delete "${userName}"? This action cannot be undone.`;
-    
+
     if (!confirm(confirmMessage)) {
       return;
     }
@@ -338,7 +339,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // Refresh data
   refreshData(): void {
     this.isLoading = true;
-    
+
     // Simulate API call delay
     setTimeout(() => {
       // In a real app, you would reload data from the backend
@@ -357,7 +358,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       const csvContent = this.generateCSV();
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      
+
       if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
@@ -366,7 +367,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         this.showSuccessMessage('Users data exported successfully');
       }
     } catch (error) {
@@ -394,11 +395,19 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return csvRows.join('\n');
   }
 
-  // Logout
   logout(): void {
-    if (confirm('Are you sure you want to logout?')) {
-      // In a real app, you would call the auth service to logout
-      this.router.navigate(['/admin/login']);
-    }
+    this.adminService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/admin/login']);
+      },
+      error: (error) => {
+        console.log(error)
+      },
+    })
+
   }
+
+
+
+
 }
