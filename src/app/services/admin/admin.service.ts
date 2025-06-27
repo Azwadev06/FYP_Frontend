@@ -2,6 +2,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from "rxjs/operators"
+import { Admin, AdminLoginData } from '../../types/types';
 
 export interface User {
   id: number;
@@ -18,7 +20,7 @@ export interface User {
 export class AdminService {
   private apiUrl = 'your-api-url'; // Replace with your actual API URL
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  
+
   constructor(private http: HttpClient) {
     // Check if admin is already logged in
     const token = localStorage.getItem('adminToken');
@@ -27,9 +29,25 @@ export class AdminService {
     }
   }
 
+
+
   // Authentication
   login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/login`, { username, password });
+    // return this.http.post(`/admin/login`, { username, password })
+
+    return this.http.post<AdminLoginData>(`/admin/login`, { username, password }).pipe(
+      tap(data => {
+        const storeData = <Admin>{
+          "username": data.data.admin.username,
+          "_id": data.data.admin._id
+        }
+
+        localStorage.setItem('admin', JSON.stringify(storeData));
+        localStorage.setItem('adminToken', data.data.accessToken);
+        this.isAuthenticatedSubject.next(true);
+      })
+    );
+
   }
 
   logout(): void {

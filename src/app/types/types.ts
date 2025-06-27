@@ -6,6 +6,11 @@ export interface User {
     lastName?: string
 }
 
+export interface Admin {
+    _id?: string
+    username: string
+}
+
 export interface LoginData {
     statusCode: number
     message: string
@@ -16,6 +21,21 @@ export interface LoginData {
         user: User
     }
 }
+
+
+
+export interface AdminLoginData {
+    statusCode: number
+    message: string
+    success: string
+    data: {
+        accessToken: string
+        refreshToken: string
+        admin: Admin
+    }
+}
+
+
 
 export interface LogoutData {
     statusCode: number

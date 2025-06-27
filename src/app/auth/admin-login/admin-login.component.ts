@@ -7,7 +7,7 @@ import { NgIf } from '@angular/common';
   selector: 'app-admin-login',
   templateUrl: './admin-login.component.html',
   styleUrls: ['./admin-login.component.css'],
-  imports:[ReactiveFormsModule,NgIf]
+  imports: [ReactiveFormsModule, NgIf]
 })
 export class AdminLoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -18,7 +18,7 @@ export class AdminLoginComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private adminService: AdminService,
-    private router: Router
+    private router: Router,
   ) {
     this.loginForm = this.formBuilder.group({
       username: ['', [
@@ -120,25 +120,15 @@ export class AdminLoginComponent implements OnInit {
       return;
     }
 
-    // Call login service
     this.adminService.login(trimmedUsername, trimmedPassword).subscribe({
       next: (response) => {
         this.isLoading = false;
-        
-        // Check if login was successful
-        if (response.success && response.token) {
-          // Store the authentication token
-          this.adminService.setAuthToken(response.token);
-          
-          // Navigate to dashboard
+        if(response.statusCode){
           this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.errorMessage = response.message || 'Login failed. Please try again.';
         }
       },
       error: (error) => {
         this.isLoading = false;
-        
         // Handle different types of errors
         if (error.status === 401) {
           this.errorMessage = 'Invalid username or password';
@@ -151,7 +141,7 @@ export class AdminLoginComponent implements OnInit {
         } else {
           this.errorMessage = error.error?.message || 'An unexpected error occurred. Please try again.';
         }
-        
+
         console.error('Login error:', error);
       }
     });

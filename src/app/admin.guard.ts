@@ -8,11 +8,11 @@ import { AdminService } from './services/admin/admin.service';
   providedIn: 'root'
 })
 export class AdminGuard implements CanActivate {
-  
+
   constructor(
     private adminService: AdminService,
     private router: Router
-  ) {}
+  ) { }
 
   canActivate(): Observable<boolean> {
     return this.adminService.isAuthenticated().pipe(
