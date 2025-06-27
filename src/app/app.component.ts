@@ -15,7 +15,6 @@ import { NgIf } from '@angular/common';
 })
 export class AppComponent {
   title = 'fyp';
-  // constructor(public router: Router) { }
   isAdminRoute = false;
   constructor(private router: Router) {
     this.router.events.subscribe((event: Event) => {
@@ -24,9 +23,5 @@ export class AppComponent {
       }
     });
   }
-
-  // isAdminRoute(): boolean {
-  //   return this.router.url.startsWith('/admin');
-  // }
 }
 
