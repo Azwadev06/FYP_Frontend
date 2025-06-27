@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap } from "rxjs/operators"
-import { Admin, AdminLoginData } from '../../types/types';
+import { Admin, AdminLoginData, ApiResponse } from '../../types/types';
 
 
 export interface User {
@@ -67,8 +67,8 @@ export class AdminService {
   }
 
   // User Management
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/admin/users`);
+  getUsers(): Observable<ApiResponse<User[]>> {
+    return this.http.get<ApiResponse<User[]>>(`/admin/all-users`);
   }
 
   createUser(user: Partial<User>): Observable<User> {

@@ -108,15 +108,15 @@
               <tbody>
                 <tr *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="user-row">
                   <td>
-                    <div class="user-avatar" [style.background-color]="getAvatarColor(user.id)">
-                      {{ getInitials(user.firstName, user.lastName) }}
+                    <div class="user-avatar" [style.background-color]="getAvatarColor(user._id!)">
+                      {{ getInitials(user.firstName!, user.lastName!) }}
                     </div>
                   </td>
                   <td class="user-name">{{ user.firstName }} {{ user.lastName }}</td>
                   <td class="user-email">{{ user.email }}</td>
                   <td class="user-username">{{ '@' + user.username }}</td>
                   
-                  <td class="join-date">{{ user.joinDate | date:'MMM dd, yyyy' }}</td>
+                  <td class="join-date">{{ user.createdAt | date:'MMM dd, yyyy' }}</td>
                   <td class="actions">
                     <button 
                       class="action-btn edit-btn" 
@@ -127,7 +127,7 @@
                     </button>
                     <button 
                       class="action-btn delete-btn" 
-                      (click)="deleteUser(user.id, user.firstName + ' ' + user.lastName)"
+                      (click)="deleteUser(user._id!)"
                       title="Delete User"
                       [disabled]="isLoading">
                       🗑️

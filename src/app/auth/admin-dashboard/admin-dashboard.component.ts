@@ -5,17 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../services/admin/admin.service';
+import { User } from '../../types/types';
 
-export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  joinDate: Date;
-  password?: string; // Add this line
-
-}
 
 export interface AdminSettings {
   name: string;
@@ -35,32 +26,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('noUsersTemplate', { static: true }) noUsersTemplate!: TemplateRef<any>;
 
   // Dashboard data
-  users: User[] = [
-    {
-      id: 1,
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      username: 'johndoe',
-      joinDate: new Date('2024-01-15')
-    },
-    {
-      id: 2,
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@example.com',
-      username: 'janesmith',
-      joinDate: new Date('2024-02-20')
-    },
-    {
-      id: 3,
-      firstName: 'Bob',
-      lastName: 'Johnson',
-      email: 'bob.johnson@example.com',
-      username: 'bobjohnson',
-      joinDate: new Date('2024-03-10')
-    }
-  ];
+  users: User[] = []
 
   filteredUsers: User[] = [];
   totalUsers = 0;
@@ -102,9 +68,23 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private adminService: AdminService) { }
 
   ngOnInit(): void {
-    this.filteredUsers = [...this.users];
-    this.totalUsers = this.users.length;
-    this.adminSettings.name = this.adminName;
+    this.adminService.getUsers().subscribe({
+      next: (data) => {
+        this.filteredUsers = data.data;
+        this.users = [...data.data];
+        this.totalUsers = this.filteredUsers.length;
+      },
+      error: (error) => {
+        console.log(error)
+      },
+    })
+
+
+
+
+    // this.filteredUsers = [...this.users];
+    // this.totalUsers = this.users.length;
+    // this.adminSettings.name = this.adminName;
   }
 
   ngOnDestroy(): void {
@@ -113,8 +93,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   // Track by function for ngFor performance
-  trackByUserId(index: number, user: User): number {
-    return user.id;
+  trackByUserId(index: number, user: User): string {
+    return user._id!;
   }
 
   // Get user initials for avatar
@@ -123,29 +103,36 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   // Get avatar color based on user ID
-  getAvatarColor(userId: number): string {
+  getAvatarColor(userId: string): string {
     const colors = ['#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6', '#1ABC9C'];
-    return colors[userId % colors.length];
+
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+      hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    return colors[Math.abs(hash) % colors.length];
   }
 
   // Filter users based on search term and status
   filterUsers(): void {
     let filtered = [...this.users];
 
-    // Apply search filter
+
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(user =>
-        user.firstName.toLowerCase().includes(searchLower) ||
-        user.lastName.toLowerCase().includes(searchLower) ||
+        user.firstName!.toLowerCase().includes(searchLower) ||
+        user.lastName!.toLowerCase().includes(searchLower) ||
         user.email.toLowerCase().includes(searchLower) ||
         user.username.toLowerCase().includes(searchLower)
       );
     }
 
     this.filteredUsers = filtered;
-
   }
+
+
 
   // Open add user modal
   openAddUserModal(): void {
@@ -187,7 +174,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     const existingUser = this.users.find(u =>
       u.email.toLowerCase() === this.currentUser.email?.toLowerCase() &&
-      u.id !== this.currentUser.id
+      u._id !== this.currentUser._id
     );
 
     this.emailExists = !!existingUser;
@@ -202,7 +189,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     const existingUser = this.users.find(u =>
       u.username.toLowerCase() === this.currentUser.username?.toLowerCase() &&
-      u.id !== this.currentUser.id
+      u._id !== this.currentUser._id
     );
 
     this.usernameExists = !!existingUser;
@@ -219,70 +206,70 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
 
     // Simulate API call delay
-    setTimeout(() => {
-      try {
-        if (this.isEditMode && this.currentUser.id) {
-          // Update existing user
-          const index = this.users.findIndex(u => u.id === this.currentUser.id);
-          if (index !== -1) {
-            this.users[index] = {
-              ...this.users[index],
-              firstName: this.currentUser.firstName!.trim(),
-              lastName: this.currentUser.lastName!.trim(),
-              email: this.currentUser.email!.trim().toLowerCase(),
-              username: this.currentUser.username!.trim().toLowerCase(),
-            };
-            this.showSuccessMessage('User updated successfully');
-          }
-        } else {
-          // Create new user
-          const newUser: User = {
-            id: this.nextId++,
-            firstName: this.currentUser.firstName!.trim(),
-            lastName: this.currentUser.lastName!.trim(),
-            email: this.currentUser.email!.trim().toLowerCase(),
-            username: this.currentUser.username!.trim().toLowerCase(),
-            joinDate: new Date()
-          };
+    // setTimeout(() => {
+    //   try {
+    //     if (this.isEditMode && this.currentUser._id) {
+    //       // Update existing user
+    //       const index = this.users.findIndex(u => u._id === this.currentUser._id);
+    //       if (index !== -1) {
+    //         this.users[index] = {
+    //           ...this.users[index],
+    //           firstName: this.currentUser.firstName!.trim(),
+    //           lastName: this.currentUser.lastName!.trim(),
+    //           email: this.currentUser.email!.trim().toLowerCase(),
+    //           username: this.currentUser.username!.trim().toLowerCase(),
+    //         };
+    //         this.showSuccessMessage('User updated successfully');
+    //       }
+    //     } else {
+    //       // Create new user
+    //       const newUser: User = {
+    //         id: this.nextId++,
+    //         firstName: this.currentUser.firstName!.trim(),
+    //         lastName: this.currentUser.lastName!.trim(),
+    //         email: this.currentUser.email!.trim().toLowerCase(),
+    //         username: this.currentUser.username!.trim().toLowerCase(),
+    //         createdAt: new Date()
+    //       };
 
-          this.users.unshift(newUser);
-          this.totalUsers = this.users.length;
-          this.showSuccessMessage('User created successfully');
-        }
+    //       this.users.unshift(newUser);
+    //       this.totalUsers = this.users.length;
+    //       this.showSuccessMessage('User created successfully');
+    //     }
 
-        this.filterUsers();
-        this.closeUserModal();
-      } catch (error) {
-        this.errorMessage = 'An error occurred while saving the user';
-      } finally {
-        this.isLoading = false;
-      }
-    }, 1000);
+    //     this.filterUsers();
+    //     this.closeUserModal();
+    //   } catch (error) {
+    //     this.errorMessage = 'An error occurred while saving the user';
+    //   } finally {
+    //     this.isLoading = false;
+    //   }
+    // }, 1000);
   }
 
   // Delete user
-  deleteUser(userId: number, userName: string): void {
-    const confirmMessage = `Are you sure you want to delete "${userName}"? This action cannot be undone.`;
+  deleteUser(userId: string): void {
+    // const confirmMessage = `Are you sure you want to delete "${userName}"? This action cannot be undone.`;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+    // if (!confirm(confirmMessage)) {
+    //   return;
+    // }
 
     this.isLoading = true;
 
     // Simulate API call delay
-    setTimeout(() => {
-      try {
-        this.users = this.users.filter(u => u.id !== userId);
-        this.totalUsers = this.users.length;
-        this.filterUsers();
-        this.showSuccessMessage(`User "${userName}" deleted successfully`);
-      } catch (error) {
-        this.errorMessage = 'An error occurred while deleting the user';
-      } finally {
-        this.isLoading = false;
-      }
-    }, 500);
+    // setTimeout(() => {
+    //   try {
+    //     this.users = this.users.filter(u => u._id !== userId);
+    //     this.totalUsers = this.users.length;
+    //     this.filterUsers();
+    //     this.showSuccessMessage(`User "${userName}" deleted successfully`);
+    //   } catch (error) {
+    //     this.errorMessage = 'An error occurred while deleting the user';
+    //   } finally {
+    //     this.isLoading = false;
+    //   }
+    // }, 500);
   }
 
   // Open settings modal
@@ -382,12 +369,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     this.filteredUsers.forEach(user => {
       const row = [
-        user.id,
+        user._id,
         `"${user.firstName}"`,
         `"${user.lastName}"`,
         `"${user.email}"`,
         `"${user.username}"`,
-        new Date(user.joinDate).toLocaleDateString()
+        new Date(user.createdAt!).toLocaleDateString()
       ];
       csvRows.push(row.join(','));
     });
@@ -406,8 +393,5 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     })
 
   }
-
-
-
 
 }
