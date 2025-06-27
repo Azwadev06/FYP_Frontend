@@ -68,23 +68,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private adminService: AdminService) { }
 
   ngOnInit(): void {
+    this.getUsersApi()
+  }
+
+  getUsersApi() {
     this.adminService.getUsers().subscribe({
       next: (data) => {
         this.filteredUsers = data.data;
         this.users = [...data.data];
         this.totalUsers = this.filteredUsers.length;
+        this.isLoading = false;
       },
       error: (error) => {
         console.log(error)
+        this.isLoading = false;
       },
     })
-
-
-
-
-    // this.filteredUsers = [...this.users];
-    // this.totalUsers = this.users.length;
-    // this.adminSettings.name = this.adminName;
   }
 
   ngOnDestroy(): void {
@@ -131,7 +130,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     this.filteredUsers = filtered;
   }
-
 
 
   // Open add user modal
@@ -248,28 +246,29 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   // Delete user
-  deleteUser(userId: string): void {
-    // const confirmMessage = `Are you sure you want to delete "${userName}"? This action cannot be undone.`;
+  deleteUser(userId: string, firstName: string, lastName: string): void {
+    const fullName = `${firstName} ${lastName}`;
+    const confirmMessage = `Are you sure you want to delete "${fullName}"? This action cannot be undone.`;
 
-    // if (!confirm(confirmMessage)) {
-    //   return;
-    // }
+    if (!confirm(confirmMessage)) {
+      return;
+    }
 
     this.isLoading = true;
 
-    // Simulate API call delay
-    // setTimeout(() => {
-    //   try {
-    //     this.users = this.users.filter(u => u._id !== userId);
-    //     this.totalUsers = this.users.length;
-    //     this.filterUsers();
-    //     this.showSuccessMessage(`User "${userName}" deleted successfully`);
-    //   } catch (error) {
-    //     this.errorMessage = 'An error occurred while deleting the user';
-    //   } finally {
-    //     this.isLoading = false;
-    //   }
-    // }, 500);
+    this.adminService.deleteUser(userId).subscribe({
+      next: () => {
+        this.users = this.users.filter(u => u._id !== userId);
+        this.totalUsers = this.users.length;
+        this.filterUsers();
+        this.showSuccessMessage(`User "${fullName}" deleted successfully`);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.log(error)
+        this.isLoading = false;
+      },
+    })
   }
 
   // Open settings modal
@@ -327,16 +326,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   refreshData(): void {
     this.isLoading = true;
 
-    // Simulate API call delay
-    setTimeout(() => {
-      // In a real app, you would reload data from the backend
-      this.totalUsers = this.users.length;
-      this.totalReviews = Math.floor(Math.random() * 200) + 100;
-      this.totalRestaurants = Math.floor(Math.random() * 100) + 50;
-      this.filterUsers();
-      this.showSuccessMessage('Data refreshed successfully');
-      this.isLoading = false;
-    }, 1500);
+    this.getUsersApi()
+
   }
 
   // Export users data

@@ -79,8 +79,14 @@ export class AdminService {
     return this.http.put<User>(`${this.apiUrl}/admin/users/${id}`, user);
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/admin/users/${id}`);
+  deleteUser(userId: string): Observable<ApiResponse<User>> {
+    return this.http.request<ApiResponse<User>>(
+      'DELETE',
+      `/admin/delete-user`,
+      {
+        body: { userId }
+      }
+    );
   }
 
   // Statistics
