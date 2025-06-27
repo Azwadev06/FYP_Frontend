@@ -405,6 +405,11 @@
         <button class="close-btn" (click)="closeSettingsModal()">×</button>
       </div>
 
+      <div class="error-message" *ngIf="errorMessage">
+        <span class="message-icon">❌</span>
+        {{ errorMessage }}
+      </div>
+
       <form
         class="settings-form"
         (ngSubmit)="saveSettings()"

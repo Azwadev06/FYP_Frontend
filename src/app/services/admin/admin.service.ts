@@ -4,22 +4,17 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap } from "rxjs/operators"
 import { Admin, AdminLoginData, ApiResponse } from '../../types/types';
+import { User } from '../../types/types';
 
-
-export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
+interface AdminData {
+  id: string;
   username: string;
-  joinDate: Date;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = 'your-api-url'; // Replace with your actual API URL
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient) {
@@ -30,6 +25,42 @@ export class AdminService {
     }
   }
 
+  updateAdminUsername(newUsername: string): void {
+    const adminData = this.getAdminData();
+
+    if (!adminData) {
+      throw new Error('No admin data found in localStorage');
+    }
+
+    const updatedData: Admin = {
+      ...adminData,
+      username: newUsername.trim()
+    };
+
+    localStorage.setItem('admin', JSON.stringify(updatedData));
+  }
+
+
+  getAdminData(): AdminData | null {
+    try {
+      const adminRaw = localStorage.getItem("admin");
+      return adminRaw ? JSON.parse(adminRaw) : null;
+    } catch (error) {
+      console.error('Failed to parse admin data:', error);
+      return null;
+    }
+  }
+
+
+  getAdminToken(): String | null {
+    try {
+      const adminRaw = localStorage.getItem("adminToken");
+      return adminRaw
+    } catch (error) {
+      console.error('Failed to parse admin token:', error);
+      return null;
+    }
+  }
 
 
   // Authentication
@@ -87,6 +118,15 @@ export class AdminService {
         body: { userId }
       }
     );
+  }
+
+  updateAdminSettings(data: {
+    token: string;
+    username: string;
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<any> {
+    return this.http.patch(`/admin/update`, data);
   }
 
 }

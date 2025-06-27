@@ -64,13 +64,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
 
-  // Next ID for new users
-  private nextId = 4;
 
   constructor(private router: Router, private adminService: AdminService) { }
 
   ngOnInit(): void {
     this.getUsersApi()
+    const adminData = this.adminService.getAdminData()
+    this.adminName = adminData!.username
   }
 
   getUsersApi() {
@@ -218,6 +218,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       this.adminService.updateUser(_id!, userData).subscribe({
         next: (data) => {
           this.isLoading = false;
+          this.refreshData()
+
         },
         error: (error) => {
           this.isLoading = false;
@@ -229,6 +231,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       this.adminService.createUser(userData).subscribe({
         next: (data) => {
           this.isLoading = false;
+          this.refreshData()
+
         },
         error: (error) => {
           this.isLoading = false;
@@ -236,6 +240,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         },
       })
     }
+
 
   }
 
@@ -287,19 +292,39 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   saveSettings(): void {
     this.isLoading = true;
 
-    // Simulate API call delay
-    setTimeout(() => {
-      try {
-        // In a real app, you would validate the current password with the backend
-        this.adminName = this.adminSettings.name.trim();
+    const adminToken = this.adminService.getAdminToken();
+
+    if (!adminToken) {
+      this.isLoading = false;
+      this.errorMessage = 'Authentication token missing';
+      this.router.navigate(['/admin/login']);
+      return;
+    }
+
+    const updateData = {
+      token: adminToken as string,
+      username: this.adminSettings.name,
+      currentPassword: this.adminSettings.currentPassword,
+      newPassword: this.adminSettings.newPassword || this.adminSettings.currentPassword
+    };
+
+    this.adminService.updateAdminSettings(updateData).subscribe({
+      next: (response) => {
+        this.adminName = this.adminSettings.name
+        this.adminService.updateAdminUsername(this.adminSettings.name)
+        this.isLoading = false;
         this.showSuccessMessage('Settings updated successfully');
         this.closeSettingsModal();
-      } catch (error) {
-        this.errorMessage = 'An error occurred while saving settings';
-      } finally {
+      },
+      error: (error) => {
         this.isLoading = false;
+        this.errorMessage = error.error?.message || 'Failed to update settings';
+        console.log(error?.error?.message)
+
+
+        // console.error('Update error:', );
       }
-    }, 1000);
+    });
   }
 
   // Show success message
