@@ -72,11 +72,11 @@ export class AdminService {
   }
 
   createUser(user: Partial<User>): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/admin/users`, user);
+    return this.http.post<User>(`/admin/add-user`, user);
   }
 
-  updateUser(id: number, user: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/admin/users/${id}`, user);
+  updateUser(_id: string, user: Partial<User>): Observable<ApiResponse<User>> {
+    return this.http.patch<ApiResponse<User>>(`/admin/update-user/${_id}`, user);
   }
 
   deleteUser(userId: string): Observable<ApiResponse<User>> {
@@ -89,8 +89,4 @@ export class AdminService {
     );
   }
 
-  // Statistics
-  getStats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/stats`);
-  }
 }

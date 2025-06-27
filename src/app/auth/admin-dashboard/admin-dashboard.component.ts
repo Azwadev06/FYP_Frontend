@@ -42,6 +42,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isEditMode = false;
   currentUser: Partial<User> = {};
 
+  newUserPassword: string = '';
+
   // Admin settings
   adminName = 'Admin';
   adminSettings: AdminSettings = {
@@ -202,47 +204,39 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // Save user (create or update)
   saveUser(): void {
     this.isLoading = true;
+    const userData = {
+      firstName: this.currentUser.firstName?.trim(),
+      lastName: this.currentUser.lastName?.trim(),
+      email: this.currentUser.email?.trim().toLowerCase(),
+      username: this.currentUser.username?.trim().toLowerCase(),
+      ...(!this.isEditMode && { password: this.newUserPassword }) // Only include password for new users
+    };
+    const _id = this.currentUser._id
 
-    // Simulate API call delay
-    // setTimeout(() => {
-    //   try {
-    //     if (this.isEditMode && this.currentUser._id) {
-    //       // Update existing user
-    //       const index = this.users.findIndex(u => u._id === this.currentUser._id);
-    //       if (index !== -1) {
-    //         this.users[index] = {
-    //           ...this.users[index],
-    //           firstName: this.currentUser.firstName!.trim(),
-    //           lastName: this.currentUser.lastName!.trim(),
-    //           email: this.currentUser.email!.trim().toLowerCase(),
-    //           username: this.currentUser.username!.trim().toLowerCase(),
-    //         };
-    //         this.showSuccessMessage('User updated successfully');
-    //       }
-    //     } else {
-    //       // Create new user
-    //       const newUser: User = {
-    //         id: this.nextId++,
-    //         firstName: this.currentUser.firstName!.trim(),
-    //         lastName: this.currentUser.lastName!.trim(),
-    //         email: this.currentUser.email!.trim().toLowerCase(),
-    //         username: this.currentUser.username!.trim().toLowerCase(),
-    //         createdAt: new Date()
-    //       };
+    if (this.isEditMode) {
 
-    //       this.users.unshift(newUser);
-    //       this.totalUsers = this.users.length;
-    //       this.showSuccessMessage('User created successfully');
-    //     }
+      this.adminService.updateUser(_id!, userData).subscribe({
+        next: (data) => {
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.log(error)
+        },
+      })
+    }
+    else {
+      this.adminService.createUser(userData).subscribe({
+        next: (data) => {
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.log(error)
+        },
+      })
+    }
 
-    //     this.filterUsers();
-    //     this.closeUserModal();
-    //   } catch (error) {
-    //     this.errorMessage = 'An error occurred while saving the user';
-    //   } finally {
-    //     this.isLoading = false;
-    //   }
-    // }, 1000);
   }
 
   // Delete user
